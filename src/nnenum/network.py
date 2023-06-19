@@ -306,13 +306,26 @@ class AddLayer(Freezable):
 
         zono.center += nn_flatten(self.vec)
 
-    def transform_deeppoly(self):
+    def transform_deeppoly(self, deeppoly):
         'apply the linear transformation part of the layer to the passed-in deeppoly weights (not relu)'
-        ubcoef_nl = np.identity(len(self.vec))  # upper bounds coefficients of new layer
         ubconst_nl = nn_flatten(self.vec)  # upper bounds constants of new layer
-        lbcoef_nl = np.identity(len(self.vec))  # lower bounds coefficients of new layer
         lbconst_nl = nn_flatten(self.vec)  # lower bounds constants of new layer
-        return ubcoef_nl, ubconst_nl, lbcoef_nl, lbconst_nl
+        
+        # back substitution
+        updated_ubconst_nl = deeppoly.ubconst + ubconst_nl
+
+        updated_lbconst_nl = deeppoly.ubconst + lbconst_nl
+        
+        deeppoly.ubconst = updated_ubconst_nl
+        deeppoly.lbconst = updated_lbconst_nl
+
+        deeppoly.ubs = np.where(deeppoly.ubcoef >= 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 1]
+        deeppoly.ubs += np.where(deeppoly.ubcoef < 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 0]
+        deeppoly.ubs += deeppoly.ubconst
+        deeppoly.lbs = np.where(deeppoly.lbcoef >= 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 0]
+        deeppoly.lbs += np.where(deeppoly.lbcoef < 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 1]
+        deeppoly.lbs += deeppoly.lbconst
+
 
     def execute(self, state):
         '''execute on a concrete state
@@ -377,13 +390,34 @@ class MatMulLayer(Freezable):
         zono.mat_t = np.dot(self.mat, zono.mat_t)
         zono.center = np.dot(self.mat, zono.center)
 
-    def transform_deeppoly(self):
+    def transform_deeppoly(self, deeppoly):
         'apply the linear transformation part of the layer to the passed-in deeppoly weights (not relu)'
-        ubcoef_nl = np.copy(self.mat)  # upper bounds coefficients of new layer
-        ubconst_nl = np.zeros(len(self.mat))  # upper bounds constants of new layer
-        lbcoef_nl = np.copy(self.mat)  # lower bounds coefficients of new layer
-        lbconst_nl = np.zeros(len(self.mat))  # lower bounds constants of new layer
-        return ubcoef_nl, ubconst_nl, lbcoef_nl, lbconst_nl
+        ubcoef_nl = self.mat  # upper bounds coefficients of new layer
+        lbcoef_nl = self.mat  # lower bounds coefficients of new layer
+        
+        # back substitution
+        updated_ubcoef_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ deeppoly.ubcoef
+        updated_ubcoef_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ deeppoly.lbcoef
+        updated_ubconst_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ deeppoly.ubconst
+        updated_ubconst_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ deeppoly.lbconst
+
+        updated_lbcoef_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ deeppoly.lbcoef
+        updated_lbcoef_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ deeppoly.ubcoef
+        updated_lbconst_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ deeppoly.lbconst
+        updated_lbconst_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ deeppoly.ubconst
+        
+        deeppoly.ubcoef = updated_ubcoef_nl
+        deeppoly.ubconst = updated_ubconst_nl
+        deeppoly.lbcoef = updated_lbcoef_nl
+        deeppoly.lbconst = updated_lbconst_nl
+
+        deeppoly.ubs = np.where(deeppoly.ubcoef >= 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 1]
+        deeppoly.ubs += np.where(deeppoly.ubcoef < 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 0]
+        deeppoly.ubs += deeppoly.ubconst
+        deeppoly.lbs = np.where(deeppoly.lbcoef >= 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 0]
+        deeppoly.lbs += np.where(deeppoly.lbcoef < 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 1]
+        deeppoly.lbs += deeppoly.lbconst
+
     
     def execute(self, state):
         '''execute on a concrete state
@@ -480,14 +514,39 @@ class FullyConnectedLayer(Freezable):
 
         zono.mat_t = np.dot(self.weights, zono.mat_t)
         zono.center = np.dot(self.weights, zono.center) + self.biases
-
-    def transform_deeppoly(self):
+    
+    def transform_deeppoly(self, deeppoly):
         'apply the linear transformation part of the layer to the passed-in deeppoly weights (not relu)'
-        ubcoef_nl = np.copy(self.weights)  # upper bounds coefficients of new layer
-        ubconst_nl = np.copy(self.biases)  # upper bounds constants of new layer
-        lbcoef_nl = np.copy(self.weights)  # lower bounds coefficients of new layer
-        lbconst_nl = np.copy(self.biases)  # lower bounds constants of new layer
-        return ubcoef_nl, ubconst_nl, lbcoef_nl, lbconst_nl
+        
+        ubcoef_nl = self.weights  # upper bounds coefficients of new layer
+        ubconst_nl = self.biases  # upper bounds constants of new layer
+        lbcoef_nl = self.weights  # lower bounds coefficients of new layer
+        lbconst_nl = self.biases  # lower bounds constants of new layer
+        
+        # back substitution
+        updated_ubcoef_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ deeppoly.ubcoef
+        updated_ubcoef_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ deeppoly.lbcoef
+        updated_ubconst_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ deeppoly.ubconst
+        updated_ubconst_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ deeppoly.lbconst
+        updated_ubconst_nl += ubconst_nl
+
+        updated_lbcoef_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ deeppoly.lbcoef
+        updated_lbcoef_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ deeppoly.ubcoef
+        updated_lbconst_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ deeppoly.lbconst
+        updated_lbconst_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ deeppoly.ubconst
+        updated_lbconst_nl += lbconst_nl
+        
+        deeppoly.ubcoef = updated_ubcoef_nl
+        deeppoly.ubconst = updated_ubconst_nl
+        deeppoly.lbcoef = updated_lbcoef_nl
+        deeppoly.lbconst = updated_lbconst_nl
+
+        deeppoly.ubs = np.where(deeppoly.ubcoef >= 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 1]
+        deeppoly.ubs += np.where(deeppoly.ubcoef < 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 0]
+        deeppoly.ubs += deeppoly.ubconst
+        deeppoly.lbs = np.where(deeppoly.lbcoef >= 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 0]
+        deeppoly.lbs += np.where(deeppoly.lbcoef < 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 1]
+        deeppoly.lbs += deeppoly.lbconst
 
     def execute(self, state):
         '''execute the fully connected layer on a concrete state

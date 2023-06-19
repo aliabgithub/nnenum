@@ -281,7 +281,7 @@ def do_overapprox_rounds(ss, network, spec, prerelu_sims, check_cancel_func=None
             if type_str.startswith('zono.'):
                 z = ZonoOverapprox(ss, type_str, gen_limit)
                 sets.append(z)
-            elif type_str.startswith('deeppoly'):
+            elif type_str.startswith('deeppoly.'):
                 z = DeeppolyOverapprox(ss, type_str, gen_limit)
                 sets.append(z)
             else:
@@ -706,58 +706,99 @@ class DeeppolyOverapprox(Freezable):
         # case2: positive lower bound -> do nothing
 
         # case3: convex approximation
-        idx = np.where((self.ubs <= -1 * self.lbs) & (self.ubs > 0) & (self.lbs < 0))
-        if np.size(idx) > 0:
-            factor = self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
-            bias = -self.lbs[idx] * self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+        if self.type_string == 'deeppoly.area':
+            idx = np.where((self.ubs <= -1 * self.lbs) & (self.ubs > 0) & (self.lbs < 0))
+            if np.size(idx) > 0:
+                factor = self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+                bias = -self.lbs[idx] * self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
 
-            self.ubcoef[idx] = factor.reshape(-1, 1) * self.ubcoef[idx]
-            self.ubconst[idx] = factor * self.ubconst[idx] + bias
+                self.ubcoef[idx] = factor.reshape(-1, 1) * self.ubcoef[idx]
+                self.ubconst[idx] = factor * self.ubconst[idx] + bias
 
-            self.lbcoef[idx] = 0.0
-            self.lbconst[idx] = 0.0
+                self.lbcoef[idx] = 0.0
+                self.lbconst[idx] = 0.0
 
-            self.ubs[idx], self.lbs[idx] = self.ubs[idx], 0.0
+                self.ubs[idx], self.lbs[idx] = self.ubs[idx], 0.0
 
-        idx = np.where((self.ubs > -1 * self.lbs) & (self.lbs < 0))
-        if np.size(idx) > 0:
-            factor = self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
-            bias = -self.lbs[idx] * self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+            idx = np.where((self.ubs > -1 * self.lbs) & (self.lbs < 0))
+            if np.size(idx) > 0:
+                factor = self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+                bias = -self.lbs[idx] * self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
 
-            self.ubcoef[idx] = factor.reshape(-1, 1) * self.ubcoef[idx]
-            self.ubconst[idx] = factor * self.ubconst[idx] + bias
+                self.ubcoef[idx] = factor.reshape(-1, 1) * self.ubcoef[idx]
+                self.ubconst[idx] = factor * self.ubconst[idx] + bias
 
-            self.ubs[idx], self.lbs[idx] = self.ubs[idx], self.lbs[idx]
+                self.ubs[idx], self.lbs[idx] = self.ubs[idx], self.lbs[idx]
+        elif self.type_string == 'deeppoly.upper':
+            idx = np.where((self.ubs > 0) & (self.lbs < 0))
+            if np.size(idx) > 0:
+                factor = self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+                bias = -self.lbs[idx] * self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+
+                self.ubcoef[idx] = factor.reshape(-1, 1) * self.ubcoef[idx]
+                self.ubconst[idx] = factor * self.ubconst[idx] + bias
+
+                self.ubs[idx], self.lbs[idx] = self.ubs[idx], self.lbs[idx]
+        elif self.type_string == 'deeppoly.lower':
+            idx = np.where((self.ubs > 0) & (self.lbs < 0))
+            if np.size(idx) > 0:
+                factor = self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+                bias = -self.lbs[idx] * self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+
+                self.ubcoef[idx] = factor.reshape(-1, 1) * self.ubcoef[idx]
+                self.ubconst[idx] = factor * self.ubconst[idx] + bias
+
+                self.lbcoef[idx] = 0.0
+                self.lbconst[idx] = 0.0
+
+                self.ubs[idx], self.lbs[idx] = self.ubs[idx], 0.0
+        elif self.type_string == 'deeppoly.middle':
+            idx = np.where((self.ubs > 0) & (self.lbs < 0))
+            if np.size(idx) > 0:
+                factor = self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+                bias = -self.lbs[idx] * self.ubs[idx]/(self.ubs[idx] - self.lbs[idx])
+
+                self.ubcoef[idx] = factor.reshape(-1, 1) * self.ubcoef[idx]
+                self.ubconst[idx] = factor * self.ubconst[idx] + bias
+
+                factor_lb = 0.5 * np.ones_like(factor) # bias_lb = 0.0
+                self.lbcoef[idx] = factor_lb.reshape(-1, 1) * self.lbcoef[idx]
+                self.lbconst[idx] = factor_lb * self.lbconst[idx]
+
+                self.ubs[idx], self.lbs[idx] = self.ubs[idx], self.lbs[idx]/2.0
+        else:
+            raise UnknownType(f'unknown type string for deeppoly overapprox: {self.type_string}')
 
     def transform_linear(self, layer):
         'affine transformation'
 
-        ubcoef_nl, ubconst_nl, lbcoef_nl, lbconst_nl = layer.transform_deeppoly()
+        layer.transform_deeppoly(self)
+        # ubcoef_nl, ubconst_nl, lbcoef_nl, lbconst_nl = layer.transform_deeppoly()
 
-        # back substitution
-        updated_ubcoef_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ self.ubcoef
-        updated_ubcoef_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ self.lbcoef
-        updated_ubconst_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ self.ubconst
-        updated_ubconst_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ self.lbconst
-        updated_ubconst_nl += ubconst_nl
+        # # back substitution
+        # updated_ubcoef_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ self.ubcoef
+        # updated_ubcoef_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ self.lbcoef
+        # updated_ubconst_nl = np.where(ubcoef_nl >= 0, ubcoef_nl, 0) @ self.ubconst
+        # updated_ubconst_nl += np.where(ubcoef_nl < 0, ubcoef_nl, 0) @ self.lbconst
+        # updated_ubconst_nl += ubconst_nl
 
-        updated_lbcoef_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ self.lbcoef
-        updated_lbcoef_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ self.ubcoef
-        updated_lbconst_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ self.lbconst
-        updated_lbconst_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ self.ubconst
-        updated_lbconst_nl += lbconst_nl
+        # updated_lbcoef_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ self.lbcoef
+        # updated_lbcoef_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ self.ubcoef
+        # updated_lbconst_nl = np.where(lbcoef_nl >= 0, lbcoef_nl, 0) @ self.lbconst
+        # updated_lbconst_nl += np.where(lbcoef_nl < 0, lbcoef_nl, 0) @ self.ubconst
+        # updated_lbconst_nl += lbconst_nl
         
-        self.ubcoef = updated_ubcoef_nl
-        self.ubconst = updated_ubconst_nl
-        self.lbcoef = updated_lbcoef_nl
-        self.lbconst = updated_lbconst_nl
+        # self.ubcoef = updated_ubcoef_nl
+        # self.ubconst = updated_ubconst_nl
+        # self.lbcoef = updated_lbcoef_nl
+        # self.lbconst = updated_lbconst_nl
 
-        self.ubs = np.where(self.ubcoef >= 0, self.ubcoef, 0) @ self.inputbounds[:, 1]
-        self.ubs += np.where(self.ubcoef < 0, self.ubcoef, 0) @ self.inputbounds[:, 0]
-        self.ubs += self.ubconst
-        self.lbs = np.where(self.lbcoef >= 0, self.lbcoef, 0) @ self.inputbounds[:, 0]
-        self.lbs += np.where(self.lbcoef < 0, self.lbcoef, 0) @ self.inputbounds[:, 1]
-        self.lbs += self.lbconst
+        # self.ubs = np.where(self.ubcoef >= 0, self.ubcoef, 0) @ self.inputbounds[:, 1]
+        # self.ubs += np.where(self.ubcoef < 0, self.ubcoef, 0) @ self.inputbounds[:, 0]
+        # self.ubs += self.ubconst
+        # self.lbs = np.where(self.lbcoef >= 0, self.lbcoef, 0) @ self.inputbounds[:, 0]
+        # self.lbs += np.where(self.lbcoef < 0, self.lbcoef, 0) @ self.inputbounds[:, 1]
+        # self.lbs += self.lbconst
 
     def tighten_bounds(self, layer_bounds, _split_indices, _sim, _check_cancel_func, _depth):
         '''
@@ -800,7 +841,7 @@ class DeeppolyOverapprox(Freezable):
         for i, row in enumerate(updated_lbcoef_nl):
             if min_vals[i] > spec.rhs[i]:
                 might_violate = False
-                # print('verified by deeppoly')
+                print('verified by deeppoly')
                 return not might_violate
         return not might_violate
         
@@ -808,3 +849,6 @@ class DeeppolyOverapprox(Freezable):
         'get the number of generators in the overapproximation (-1 if inapplicable)'
         
         return -1
+
+class UnknownType(RuntimeError):
+    'raised if type_string is unknown'

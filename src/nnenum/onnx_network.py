@@ -133,9 +133,62 @@ class LinearOnnxSubnetworkLayer(Freezable):
         end_center = self.execute(start_center)
         zono.center = nn_flatten(end_center)
 
-    def transform_deeppoly(self):
+    def transform_deeppoly(self, deeppoly):
         'transform the deeppoly'
 
+        # ####### Version 2.0 #######
+        # cols = []
+
+        # for col in range(deeppoly.ubcoef.shape[1]):
+        #     #print(f".transforming zono: {col} / {zono.mat_t.shape[1]})")
+        #     vec = deeppoly.ubcoef[:, col]
+        #     vec = nn_unflatten(vec, self.input_shape)
+
+        #     res = self.execute(vec)
+
+        #     res = res - self.zero_output
+        #     res = nn_flatten(res)
+
+        #     cols.append(res)
+
+        # dtype = deeppoly.ubconst.dtype
+        # deeppoly.ubcoef = np.array(cols, dtype=dtype).transpose()
+
+        # start_center = nn_unflatten(deeppoly.ubconst, self.input_shape)
+        # end_center = self.execute(start_center)
+        # deeppoly.ubconst = nn_flatten(end_center)
+        # # np.save(f'deeppoly.ubcoef_{self.layer_num}.npy', deeppoly.ubcoef)
+        # # print(f'deeppoly.ubcoef.shape: {deeppoly.ubcoef.shape}')
+
+        # cols = []
+
+        # for col in range(deeppoly.lbcoef.shape[1]):
+        #     #print(f".transforming zono: {col} / {zono.mat_t.shape[1]})")
+        #     vec = deeppoly.lbcoef[:, col]
+        #     vec = nn_unflatten(vec, self.input_shape)
+
+        #     res = self.execute(vec)
+
+        #     res = res - self.zero_output
+        #     res = nn_flatten(res)
+
+        #     cols.append(res)
+
+        # dtype = deeppoly.lbconst.dtype
+        # deeppoly.lbcoef = np.array(cols, dtype=dtype).transpose()
+
+        # start_center = nn_unflatten(deeppoly.lbconst, self.input_shape)
+        # end_center = self.execute(start_center)
+        # deeppoly.lbconst = nn_flatten(end_center)
+
+        # deeppoly.ubs = np.where(deeppoly.ubcoef >= 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 1]
+        # deeppoly.ubs += np.where(deeppoly.ubcoef < 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 0]
+        # deeppoly.ubs += deeppoly.ubconst
+        # deeppoly.lbs = np.where(deeppoly.lbcoef >= 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 0]
+        # deeppoly.lbs += np.where(deeppoly.lbcoef < 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 1]
+        # deeppoly.lbs += deeppoly.lbconst
+
+        ###### Version 1.0 #######
         # dims = np.prod(self.network.layers[self.layer_num].get_output_shape()[1:])
         dims = np.prod(self.input_shape[1:])
         weights = np.identity(dims, dtype=self.dtype)
@@ -161,11 +214,32 @@ class LinearOnnxSubnetworkLayer(Freezable):
         res = self.execute(vec)
         biases = nn_flatten(res)
 
-        ubcoef_nl = np.copy(weights)  # upper bounds coefficients of new layer
-        ubconst_nl = np.copy(biases)  # upper bounds constants of new layer
-        lbcoef_nl = np.copy(weights)  # lower bounds coefficients of new layer
-        lbconst_nl = np.copy(biases)  # lower bounds constants of new layer
-        return ubcoef_nl, ubconst_nl, lbcoef_nl, lbconst_nl
+        # back substitution
+        updated_ubcoef_nl = np.where(weights >= 0, weights, 0) @ deeppoly.ubcoef
+        updated_ubcoef_nl += np.where(weights < 0, weights, 0) @ deeppoly.lbcoef
+        updated_ubconst_nl = np.where(weights >= 0, weights, 0) @ deeppoly.ubconst
+        updated_ubconst_nl += np.where(weights < 0, weights, 0) @ deeppoly.lbconst
+        updated_ubconst_nl += biases
+
+        updated_lbcoef_nl = np.where(weights >= 0, weights, 0) @ deeppoly.lbcoef
+        updated_lbcoef_nl += np.where(weights < 0, weights, 0) @ deeppoly.ubcoef
+        updated_lbconst_nl = np.where(weights >= 0, weights, 0) @ deeppoly.lbconst
+        updated_lbconst_nl += np.where(weights < 0, weights, 0) @ deeppoly.ubconst
+        updated_lbconst_nl += biases
+        
+        deeppoly.ubcoef = updated_ubcoef_nl
+        deeppoly.ubconst = updated_ubconst_nl
+        deeppoly.lbcoef = updated_lbcoef_nl
+        deeppoly.lbconst = updated_lbconst_nl
+        np.save(f'deeppoly.ubcoef_{self.layer_num}_lg.npy', deeppoly.ubcoef)
+        print(f'deeppoly.ubcoef.shape: {deeppoly.ubcoef.shape}')
+
+        deeppoly.ubs = np.where(deeppoly.ubcoef >= 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 1]
+        deeppoly.ubs += np.where(deeppoly.ubcoef < 0, deeppoly.ubcoef, 0) @ deeppoly.inputbounds[:, 0]
+        deeppoly.ubs += deeppoly.ubconst
+        deeppoly.lbs = np.where(deeppoly.lbcoef >= 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 0]
+        deeppoly.lbs += np.where(deeppoly.lbcoef < 0, deeppoly.lbcoef, 0) @ deeppoly.inputbounds[:, 1]
+        deeppoly.lbs += deeppoly.lbconst
 
 
     def execute(self, state):
