@@ -1,13 +1,15 @@
 '''
 nnenum vnnlib front end
 
-usage: "python3 nnenum.py <onnx_file> <vnnlib_file> [timeout=None] [outfile=None]"
+usage: "python3 nnenum.py -o <onnx_file> -v <vnnlib_file> [-t timeout=None] [-f outfile=None] [-p processes] [-s settings=auto]"
 
-Stanley Bak
-June 2021
+Ali A. Bigdeli
+June 2022
 '''
 
+
 import sys
+import argparse
 
 import numpy as np
 
@@ -19,6 +21,7 @@ from nnenum.result import Result
 from nnenum.onnx_network import load_onnx_network_optimized, load_onnx_network
 from nnenum.specification import Specification, DisjunctiveSpec
 from nnenum.vnnlib import get_num_inputs_outputs, read_vnnlib_simple
+import nnenum.setting_cat as setting_cat
 
 def make_spec(vnnlib_filename, onnx_filename):
     '''make Specification
@@ -97,29 +100,54 @@ def set_image_settings():
 def main():
     'main entry point'
 
-    if len(sys.argv) < 3:
-        print('usage: "python3 nnenum.py <onnx_file> <vnnlib_file> [timeout=None] [outfile=None] [processes=<auto>]"')
-        sys.exit(1)
-
-    onnx_filename = sys.argv[1]
-    vnnlib_filename = sys.argv[2]
-    timeout = None
-    outfile = None
-
-    if len(sys.argv) >= 4:
-        timeout = float(sys.argv[3])
-
-    if len(sys.argv) >= 5:
-        outfile = sys.argv[4]
-
-    if len(sys.argv) >= 6:
-        processes = int(sys.argv[5])
+    parser = argparse.ArgumentParser() # description is optional
+    parser.add_argument('-o', '--onnx', type=str, required=True, help="relative path to onnx file")
+    parser.add_argument('-v', '--vnnlib', type=str, required=True, help="relative path to vnnlib file")
+    parser.add_argument('-t', '--timeout', type=int, default=None, help="timeout in seconds. default is no timeout")
+    parser.add_argument('-f', '--outfile', type=str, default=None, help="filename the result save on, e.g.: out.txt, out.csv")
+    parser.add_argument('-p', '--processes', type=int, help="number of processes to use")
+    parser.add_argument('-s', '--settings', type=str, default="auto", help="settings to running the tool, it can be 'control' or 'image' or name of the dataset for more specified setting. default is auto")
+    args = parser.parse_args()
+    
+    if args.onnx:
+        onnx_filename = args.onnx
+    
+    if args.vnnlib:
+        vnnlib_filename = args.vnnlib
+    
+    timeout = args.timeout
+    
+    outfile = args.outfile
+    
+    if args.processes:
+        processes = args.processes
         Settings.NUM_PROCESSES = processes
+    
+    settings_str = args.settings
+    
+    # if len(sys.argv) < 3:
+    #     print('usage: "python3 nnenum.py <onnx_file> <vnnlib_file> [timeout=None] [outfile=None] [processes=<auto>]"')
+    #     sys.exit(1)
 
-    if len(sys.argv) >= 7:
-        settings_str = sys.argv[6]
-    else:
-        settings_str = "auto"
+    # onnx_filename = sys.argv[1]
+    # vnnlib_filename = sys.argv[2]
+    # timeout = None
+    # outfile = None
+
+    # if len(sys.argv) >= 4:
+    #     timeout = float(sys.argv[3])
+
+    # if len(sys.argv) >= 5:
+    #     outfile = sys.argv[4]
+
+    # if len(sys.argv) >= 6:
+    #     processes = int(sys.argv[5])
+    #     Settings.NUM_PROCESSES = processes
+
+    # if len(sys.argv) >= 7:
+    #     settings_str = sys.argv[6]
+    # else:
+    #     settings_str = "auto"
 
     ####################################
     ####################################
@@ -152,6 +180,8 @@ def main():
             set_control_settings()
         else:
             set_image_settings()
+    elif settings_str == "mnist_fc":
+        setting_cat.set_mnist_fc_settings()
     elif settings_str == "control":
         set_control_settings()
     elif settings_str == "image":
