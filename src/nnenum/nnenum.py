@@ -11,6 +11,8 @@ import sys
 
 import numpy as np
 
+from pathlib import Path
+
 from nnenum.enumerate import enumerate_network
 from nnenum.settings import Settings
 from nnenum.result import Result
@@ -64,7 +66,7 @@ def set_control_settings():
 def set_exact_settings():
     'set settings for smaller control benchmarks'
 
-    Settings.TIMING_STATS = True
+    #Settings.TIMING_STATS = True
     Settings.TRY_QUICK_OVERAPPROX = False
 
     Settings.CONTRACT_ZONOTOPE_LP = True
@@ -85,7 +87,7 @@ def set_image_settings():
     Settings.OVERAPPROX_MIN_GEN_LIMIT = np.inf
     Settings.SPLIT_IF_IDLE = False
     Settings.OVERAPPROX_LP_TIMEOUT = np.inf
-    Settings.TIMING_STATS = True
+    #Settings.TIMING_STATS = True
 
     # contraction doesn't help in high dimensions
     #Settings.OVERAPPROX_CONTRACT_ZONO_LP = False
@@ -118,6 +120,19 @@ def main():
         settings_str = sys.argv[6]
     else:
         settings_str = "auto"
+
+    ####################################
+    ####################################
+    ####################################
+    # VNN-COMP 2022 SPECIFIC
+    
+    if Path(onnx_filename + ".converted").is_file():
+        onnx_filename = onnx_filename + ".converted"
+        print(f"NOTE: Using converted onnx path: {onnx_filename}")
+        
+    ####################################
+    ####################################
+    ####################################
 
     #
     spec_list, input_dtype = make_spec(vnnlib_filename, onnx_filename)
@@ -155,6 +170,16 @@ def main():
 
             Settings.TIMEOUT = timeout
 
+        ####################################
+        ####################################
+        ####################################
+        # VNN-COMP 2022 SPECIFIC
+        Settings.TIMING_STATS = False
+        Settings.PRINT_PROGRESS = False
+        ####################################
+        ####################################
+        ####################################
+
         res = enumerate_network(init_box, network, spec)
         result_str = res.result_str
 
@@ -165,16 +190,32 @@ def main():
         if result_str != "safe":
             break
 
-    # rename for VNNCOMP21:
-        
     if result_str == "safe":
-        result_str = "holds"
+        result_str = "unsat"
     elif "unsafe" in result_str:
-        result_str = "violated"
+        result_str = "sat"
 
     if outfile is not None:
-        with open(outfile, 'w') as f:
+        with open(outfile, 'w', encoding="utf-8") as f:
             f.write(result_str)
+
+            if result_str == "sat":
+                # print counterexamples
+                
+                for i, x in enumerate(res.cinput):
+                    if i == 0:
+                        f.write('\n(')
+                    else:
+                        f.write('\n')
+                    
+                    f.write(f"(X_{i} {x})")
+
+                ###########
+
+                for i, y in enumerate(res.coutput):
+                    f.write(f"\n(Y_{i} {y})")
+
+                f.write(')')
             
     #print(result_str)
 
