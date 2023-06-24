@@ -23,7 +23,9 @@ DIR=$(dirname $(dirname $(realpath $0)))
 export PYTHONPATH="$PYTHONPATH:$DIR/src"
 
 # run maxpool conversion
-python3 -m nnenum.convert_maxpool "$ONNX_FILE"
+cd "$DIR/src"
+pipenv run python -m nnenum.convert_maxpool "$ONNX_FILE"
+# python3 -m nnenum.convert_maxpool "$ONNX_FILE"
 
 # kill any zombie processes
 killall -q python3
