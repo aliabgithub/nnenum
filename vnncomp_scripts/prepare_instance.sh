@@ -20,10 +20,9 @@ echo "Preparing $TOOL_NAME for benchmark instance in category '$CATEGORY' with o
 
 # setup environment variable for tool (doing it earlier won't be persistent with docker)"
 DIR=$(dirname $(dirname $(realpath $0)))
-export PYTHONPATH="$PYTHONPATH:$DIR/src"
+# export PYTHONPATH="$PYTHONPATH:$DIR/src"
 
 # run maxpool conversion
-cd "$DIR/src"
 pipenv run python -m nnenum.convert_maxpool "$ONNX_FILE"
 # python3 -m nnenum.convert_maxpool "$ONNX_FILE"
 

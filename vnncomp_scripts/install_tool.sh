@@ -28,8 +28,8 @@ sudo apt-get install -y python3.8 python3.8-dev gfortran python3-pip bc
 
 python3.8 -m pip install pip
 sudo -H python3.8 -m pip install -U pipenv
-cd "$DIR/src"
-pipenv install
+pipenv install python 3.8
+pipenv install -r "$DIR/requirements.txt"
 pipenv_python=`pipenv run which python`
 
 # Gurobi

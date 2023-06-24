@@ -123,7 +123,11 @@ def main():
         processes = args.processes
         Settings.NUM_PROCESSES = processes
     
-    settings_str = args.settings
+    if args.settings:
+        settings_str = args.settings
+    else:
+        settings_str = "auto"
+        
     
     # if len(sys.argv) < 3:
     #     print('usage: "python3 nnenum.py <onnx_file> <vnnlib_file> [timeout=None] [outfile=None] [processes=<auto>]"')
@@ -182,7 +186,11 @@ def main():
             set_image_settings()
     elif settings_str == "mnist_fc":
         setting_cat.set_mnist_fc_settings()
-    elif settings_str == "control":
+    elif settings_str == "acasxu":
+        set_control_settings()
+    elif settings_str == "vggnet16":
+        set_control_settings()
+    elif settings_str == "image":
         set_control_settings()
     elif settings_str == "image":
         set_image_settings()

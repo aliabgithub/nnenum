@@ -28,6 +28,6 @@ export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 
 # run the tool to produce the results file
-cd "$DIR/src"
+# cd "$DIR/src"
 pipenv run python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
 # python3 -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
