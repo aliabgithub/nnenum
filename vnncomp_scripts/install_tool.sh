@@ -40,3 +40,6 @@ rm gurobi9.1.2_linux64.tar.gz
 sudo mv gurobi912/ /opt/ 
 cd /opt/gurobi912/linux64/
 $pipenv_python setup.py install
+
+echo "grbprobe"
+grbprobe
