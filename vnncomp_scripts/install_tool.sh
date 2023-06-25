@@ -42,4 +42,5 @@ cd /opt/gurobi912/linux64/
 $pipenv_python setup.py install
 
 echo "grbprobe"
+cd $DIR
 pipenv run grbprobe
