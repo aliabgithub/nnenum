@@ -42,4 +42,4 @@ cd /opt/gurobi912/linux64/
 $pipenv_python setup.py install
 
 echo "grbprobe"
-${GUROBI_HOME}/bin/grbprobe
+pipenv run grbprobe
