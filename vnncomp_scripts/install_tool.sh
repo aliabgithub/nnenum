@@ -73,4 +73,6 @@ pip install -r "$DIR/requirements.txt"
 conda install -c gurobi gurobi
 
 # Run grbprobe for activating gurobi later.
-${VNNCOMP_PYTHON_PATH}/grbprobe
+conda activate nnenumenv
+grbprobe
+# ${VNNCOMP_PYTHON_PATH}/grbprobe
