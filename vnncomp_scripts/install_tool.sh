@@ -41,6 +41,12 @@ sudo mv gurobi912/ /opt/
 cd /opt/gurobi912/linux64/
 $pipenv_python setup.py install
 
+echo "pipenv --venv"
+pipenv --venv
+
+echo "conda"
+conda --version
+
 echo "grbprobe"
 cd $DIR
 pipenv run grbprobe
