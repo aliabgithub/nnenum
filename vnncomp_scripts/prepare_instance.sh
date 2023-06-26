@@ -20,10 +20,21 @@ echo "Preparing $TOOL_NAME for benchmark instance in category '$CATEGORY' with o
 
 # setup environment variable for tool (doing it earlier won't be persistent with docker)"
 DIR=$(dirname $(dirname $(realpath $0)))
-# export PYTHONPATH="$PYTHONPATH:$DIR/src"
+export PYTHONPATH="$PYTHONPATH:$DIR/src"
 
 # run maxpool conversion
-pipenv run python -m nnenum.convert_maxpool "$ONNX_FILE"
+
+###conda###
+if [[ -z "${VNNCOMP_PYTHON_PATH}" ]]; then
+	VNNCOMP_PYTHON_PATH=/home/ubuntu/miniconda/envs/nnenumenv/bin
+fi
+export VNNCOMP_PYTHON_PATH="$VNNCOMP_PYTHON_PATH:$DIR/src"
+${VNNCOMP_PYTHON_PATH}/python -m nnenum.convert_maxpool "$ONNX_FILE"
+
+###pipenv###
+# pipenv run python -m nnenum.convert_maxpool "$ONNX_FILE"
+
+###pip###
 # python3 -m nnenum.convert_maxpool "$ONNX_FILE"
 
 # kill any zombie processes

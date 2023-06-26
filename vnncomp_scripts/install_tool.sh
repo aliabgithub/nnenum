@@ -14,46 +14,63 @@ fi
 echo "Installing $TOOL_NAME"
 DIR=$(dirname $(dirname $(realpath $0)))
 
+#######################pip#########################
 # apt-get update &&
 # apt-get install -y python3.8 python3-pip &&
 # apt-get install -y psmisc && # for killall, used in prepare_instance.sh script
 # pip3 install -r "$DIR/requirements.txt"
+################################################
 
 
-# apt-get update &&
-# apt-get install -y python3.8 python3-pip &&
-# apt-get install -y psmisc && # for killall, used in prepare_instance.sh script
-# pip3 install pipenv 
+#######################pipenv#########################
+# sudo apt-get update
+
+# sudo apt-get remove -y python2.7 python3.6
+# sudo apt-get autoremove -y
+# sudo apt-get install -y python3.8 python3.8-dev gfortran python3-pip bc
+
+# python3.8 -m pip install pip
+# sudo -H python3.8 -m pip install -U pipenv
 # pipenv install python 3.8
 # pipenv install -r "$DIR/requirements.txt"
 # pipenv_python=`pipenv run which python`
 
+# # Gurobi
+# cd ~/
+# wget https://packages.gurobi.com/9.1/gurobi9.1.2_linux64.tar.gz
+# tar -xzvf gurobi9.1.2_linux64.tar.gz 
+# rm gurobi9.1.2_linux64.tar.gz 
+# sudo mv gurobi912/ /opt/ 
+# # mv gurobi912/ /opt/ 
+# cd /opt/gurobi912/linux64/
+# $pipenv_python setup.py install
 
-sudo apt-get update
+# echo "grbprobe"
+# cd $DIR
+# pipenv run grbprobe
 
-sudo apt-get remove -y python2.7 python3.6
-sudo apt-get autoremove -y
-sudo apt-get install -y python3.8 python3.8-dev gfortran python3-pip bc
+# echo "pipenv --venv"
+# pipenv --venv
+#######################pipenv#########################
 
-python3.8 -m pip install pip
-sudo -H python3.8 -m pip install -U pipenv
-pipenv install python 3.8
-pipenv install -r "$DIR/requirements.txt"
-pipenv_python=`pipenv run which python`
 
-# Gurobi
-cd ~/
-wget https://packages.gurobi.com/9.1/gurobi9.1.2_linux64.tar.gz
-tar -xzvf gurobi9.1.2_linux64.tar.gz 
-rm gurobi9.1.2_linux64.tar.gz 
-sudo mv gurobi912/ /opt/ 
-# mv gurobi912/ /opt/ 
-cd /opt/gurobi912/linux64/
-$pipenv_python setup.py install
+#######################conda#########################
+if [[ -z "${VNNCOMP_PYTHON_PATH}" ]]; then
+	VNNCOMP_PYTHON_PATH=/home/ubuntu/miniconda/envs/nnenumenv/bin
+fi
 
-echo "grbprobe"
-cd $DIR
-pipenv run grbprobe
+# download miniconda
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+sh miniconda.sh -b -p ${HOME}/miniconda
+echo 'export PATH=${PATH}:'${HOME}'/miniconda/bin' >> ~/.profile
+echo "alias py38=\"conda activate nnenumenv\"" >> ${HOME}/.profile
+export PATH=${PATH}:$HOME/miniconda/bin
 
-echo "pipenv --venv"
-pipenv --venv
+# Install conda environment
+${HOME}/miniconda/bin/conda create --yes --name nnenumenv python=3.8
+${HOME}/miniconda/bin/conda activate nnenumenv
+pip install -r "$DIR/requirements.txt"
+conda install -c gurobi gurobi
+
+# Run grbprobe for activating gurobi later.
+${VNNCOMP_PYTHON_PATH}/grbprobe
