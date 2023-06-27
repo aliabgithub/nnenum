@@ -24,12 +24,15 @@ echo "Running $TOOL_NAME on benchmark instance in category '$CATEGORY' with onnx
 DIR=$(dirname $(dirname $(realpath $0)))
 export PYTHONPATH="$PYTHONPATH:$DIR/src"
 
+export PATH=${PATH}:/home/ubuntu/miniconda/bin
+
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 
 # run the tool to produce the results file
 ####conda####
-${HOME}/miniconda/envs/nnenumenv/bin/python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
+# ${HOME}/miniconda/envs/nnenumenv/bin/python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
+/home/ubuntu/miniconda/envs/nnenumenv/bin/python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
 
 
 ####pipenv####
