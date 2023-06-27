@@ -70,8 +70,10 @@ ${HOME}/miniconda/bin/conda env create -f ${DIR}/environment.yml
 
 # ${HOME}/miniconda/bin/conda create --yes --name nnenumenv python=3.8
 # ${HOME}/miniconda/bin/conda activate nnenumenv
-${HOME}/miniconda/envs/nnenumenv/bin/pip install -r "$DIR/requirements.txt"
-${HOME}/miniconda/envs/nnenumenv/bin/pip install -U --no-deps git+https://github.com/dlshriver/DNNV.git@4d4b124bd739b4ddc8c68fed1af3f85b90386155#egg=dnnv
+
+# ${HOME}/miniconda/envs/nnenumenv/bin/pip install -r "$DIR/requirements.txt"
+# ${HOME}/miniconda/envs/nnenumenv/bin/pip install -U --no-deps git+https://github.com/dlshriver/DNNV.git@4d4b124bd739b4ddc8c68fed1af3f85b90386155#egg=dnnv
+
 # ${HOME}/miniconda/bin/conda install -y -c gurobi gurobi
 
 # Run grbprobe for activating gurobi later.
