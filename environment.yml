@@ -1,0 +1,9 @@
+name: nnenumenv
+channels:
+  - conda-forge
+  - gurobi
+  - defaults
+dependencies:
+  - python==3.8
+  - pip
+  - gurobi

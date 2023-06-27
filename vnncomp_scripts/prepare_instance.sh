@@ -20,15 +20,13 @@ echo "Preparing $TOOL_NAME for benchmark instance in category '$CATEGORY' with o
 
 # setup environment variable for tool (doing it earlier won't be persistent with docker)"
 DIR=$(dirname $(dirname $(realpath $0)))
-# export PYTHONPATH="$PYTHONPATH:$DIR/src"
+export PYTHONPATH="$PYTHONPATH:$DIR/src"
 
 # run maxpool conversion
 
 ###conda###
 # conda activate nnenumenv
-${HOME}/miniconda/bin/conda activate nnenumenv
-export PYTHONPATH="$PYTHONPATH:$DIR/src"
-python3.8 -m nnenum.convert_maxpool "$ONNX_FILE"
+${HOME}/miniconda/envs/nnenumenv/bin/python -m nnenum.convert_maxpool "$ONNX_FILE"
 
 ###pipenv###
 # pipenv run python -m nnenum.convert_maxpool "$ONNX_FILE"
