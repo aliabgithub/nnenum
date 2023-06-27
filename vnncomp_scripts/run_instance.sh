@@ -29,9 +29,9 @@ export OMP_NUM_THREADS=1
 
 # run the tool to produce the results file
 ####conda####
-conda activate nnenumenv
+${HOME}/miniconda/bin/conda activate nnenumenv
 export PYTHONPATH="$PYTHONPATH:$DIR/src"
-python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
+python3.8 -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
 
 
 ####pipenv####

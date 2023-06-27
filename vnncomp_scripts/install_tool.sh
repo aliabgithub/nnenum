@@ -59,14 +59,17 @@ DIR=$(dirname $(dirname $(realpath $0)))
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
 sh miniconda.sh -b -p ${HOME}/miniconda
 echo 'export PATH=${PATH}:'${HOME}'/miniconda/bin' >> ~/.profile
-echo "alias py38=\"conda activate nnenumenv\"" >> ${HOME}/.profile
+# echo "alias py38=\"conda activate nnenumenv\"" >> ${HOME}/.profile
+echo "conda activate nnenumenv" >> ${HOME}/.profile
 export PATH=${PATH}:$HOME/miniconda/bin
+
 
 # create conda environment
 ${HOME}/miniconda/bin/conda create --yes --name nnenumenv python=3.8
-conda activate nnenumenv
+${HOME}/miniconda/bin/conda activate nnenumenv
 pip install -r "$DIR/requirements.txt"
-conda install -y -c gurobi gurobi
+pip install -U --no-deps git+https://github.com/dlshriver/DNNV.git@4d4b124bd739b4ddc8c68fed1af3f85b90386155#egg=dnnv
+${HOME}/miniconda/bin/conda install -y -c gurobi gurobi
 
 # Run grbprobe for activating gurobi later.
 grbprobe
