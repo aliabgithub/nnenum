@@ -55,24 +55,18 @@ DIR=$(dirname $(dirname $(realpath $0)))
 
 
 #######################conda#########################
-if [[ -z "${VNNCOMP_PYTHON_PATH}" ]]; then
-	VNNCOMP_PYTHON_PATH=/home/ubuntu/miniconda/envs/nnenumenv/bin
-fi
-
-# download miniconda
+# download and install miniconda
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
 sh miniconda.sh -b -p ${HOME}/miniconda
 echo 'export PATH=${PATH}:'${HOME}'/miniconda/bin' >> ~/.profile
 echo "alias py38=\"conda activate nnenumenv\"" >> ${HOME}/.profile
 export PATH=${PATH}:$HOME/miniconda/bin
 
-# Install conda environment
+# create conda environment
 ${HOME}/miniconda/bin/conda create --yes --name nnenumenv python=3.8
-${HOME}/miniconda/bin/conda activate nnenumenv
+conda activate nnenumenv
 pip install -r "$DIR/requirements.txt"
 conda install -y -c gurobi gurobi
 
 # Run grbprobe for activating gurobi later.
-conda activate nnenumenv
 grbprobe
-# ${VNNCOMP_PYTHON_PATH}/grbprobe

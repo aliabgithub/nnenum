@@ -25,11 +25,9 @@ export PYTHONPATH="$PYTHONPATH:$DIR/src"
 # run maxpool conversion
 
 ###conda###
-if [[ -z "${VNNCOMP_PYTHON_PATH}" ]]; then
-	VNNCOMP_PYTHON_PATH=/home/ubuntu/miniconda/envs/nnenumenv/bin
-fi
-export VNNCOMP_PYTHON_PATH="$VNNCOMP_PYTHON_PATH:$DIR/src"
-${VNNCOMP_PYTHON_PATH}/python -m nnenum.convert_maxpool "$ONNX_FILE"
+conda activate nnenumenv
+export PYTHONPATH="$PYTHONPATH:$DIR/src"
+python -m nnenum.convert_maxpool "$ONNX_FILE"
 
 ###pipenv###
 # pipenv run python -m nnenum.convert_maxpool "$ONNX_FILE"
