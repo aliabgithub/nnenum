@@ -63,9 +63,10 @@ echo 'export PATH=${PATH}:'${HOME}'/miniconda/bin' >> ~/.profile
 echo "conda activate nnenumenv" >> ${HOME}/.profile
 export PATH=${PATH}:$HOME/miniconda/bin
 
-
+# see all the process
+ps aux
 # create conda environment
-${HOME}/miniconda/bin/conda env create -f "$DIR/environment.yml"
+${HOME}/miniconda/bin/conda env create -f ${DIR}/environment.yml
 
 # ${HOME}/miniconda/bin/conda create --yes --name nnenumenv python=3.8
 # ${HOME}/miniconda/bin/conda activate nnenumenv
