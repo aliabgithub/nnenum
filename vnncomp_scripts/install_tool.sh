@@ -70,7 +70,7 @@ export PATH=${PATH}:$HOME/miniconda/bin
 ${HOME}/miniconda/bin/conda create --yes --name nnenumenv python=3.8
 ${HOME}/miniconda/bin/conda activate nnenumenv
 pip install -r "$DIR/requirements.txt"
-conda install -c gurobi gurobi
+conda install -y -c gurobi gurobi
 
 # Run grbprobe for activating gurobi later.
 conda activate nnenumenv
