@@ -61,31 +61,37 @@ DIR=$(dirname $(dirname $(realpath $0)))
 # conda_path = ${HOME}/miniconda/bin
 # py_pip_path = ${HOME}/miniconda/envs/nnenumenv/bin # path for python, pip, grbprobe
 # download and install miniconda
-# wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
-wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh -O anaconda.sh
-# # sh miniconda.sh -b -p ${HOME}/miniconda
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+# wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh -O anaconda.sh
+sh miniconda.sh -b -p ${HOME}/miniconda
 # sh miniconda.sh -b
-sh anaconda.sh -b
+# sh anaconda.sh -b
 # echo 'export PATH=${PATH}:'${HOME}'/miniconda/bin' >> ~/.profile
-echo 'export PATH=${PATH}:'${HOME}'/anaconda3/bin' >> ~/.profile
+echo 'export PATH=${PATH}:'${DIR}'/miniconda/bin' >> ~/.profile
+# echo 'export PATH=${PATH}:'${HOME}'/anaconda3/bin' >> ~/.profile
 # # echo "alias py38=\"conda activate nnenumenv\"" >> ${HOME}/.profile
-# echo "conda activate nnenumenv" >> ${HOME}/.profile
+echo "conda activate nnenumenv" >> ${HOME}/.profile
 # export PATH=${PATH}:$HOME/miniconda/bin
+export PATH=${PATH}:$DIR/miniconda/bin
 
 # see all the process
 # ps aux
 # create conda environment
 # ${HOME}/miniconda/bin/conda env create -f ${DIR}/environment.yml
 
-${HOME}/anaconda3/bin/conda create --yes --name nnenumenv python=3.8
+# ${HOME}/anaconda3/bin/conda create --yes --name nnenumenv python=3.8
+${DIR}/miniconda/bin/conda create --yes --name nnenumenv python=3.8
 # ${HOME}/miniconda/bin/conda activate nnenumenv
 
-${HOME}/anaconda3/envs/nnenumenv/bin/pip install -r "$DIR/requirements.txt"
-${HOME}/anaconda3/envs/nnenumenv/bin/pip install -U --no-deps git+https://github.com/dlshriver/DNNV.git@4d4b124bd739b4ddc8c68fed1af3f85b90386155#egg=dnnv
+# ${HOME}/anaconda3/envs/nnenumenv/bin/pip install -r "$DIR/requirements.txt"
+${DIR}/miniconda/envs/nnenumenv/bin/pip install -r "$DIR/requirements.txt"
+# ${HOME}/anaconda3/envs/nnenumenv/bin/pip install -U --no-deps git+https://github.com/dlshriver/DNNV.git@4d4b124bd739b4ddc8c68fed1af3f85b90386155#egg=dnnv
+${DIR}/miniconda/envs/nnenumenv/bin/pip install -U --no-deps git+https://github.com/dlshriver/DNNV.git@4d4b124bd739b4ddc8c68fed1af3f85b90386155#egg=dnnv
 
 # ${HOME}/anaconda3/bin/conda install -y -c gurobi gurobi
-${HOME}/anaconda3/bin/conda install --yes -n nnenumenv -c gurobi gurobi
-# ${conda_path}/conda install --yes -n nnenumenv -c gurobi gurobi
+# ${HOME}/anaconda3/bin/conda install --yes -n nnenumenv -c gurobi gurobi
+${DIR}/miniconda/bin/conda install --yes -n nnenumenv -c gurobi gurobi
 
 # Run grbprobe for activating gurobi later.
-${HOME}/anaconda3/envs/nnenumenv/bin/grbprobe
+# ${HOME}/anaconda3/envs/nnenumenv/bin/grbprobe
+${DIR}/miniconda/envs/nnenumenv/bin/grbprobe
