@@ -63,7 +63,8 @@ DIR=$(dirname $(dirname $(realpath $0)))
 # download and install miniconda
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
 # wget https://repo.anaconda.com/archive/Anaconda3-2020.02-Linux-x86_64.sh -O anaconda.sh
-sh miniconda.sh -b -p ${HOME}/miniconda
+# sh miniconda.sh -b -p ${HOME}/miniconda
+sh miniconda.sh -b -p ${DIR}/miniconda
 # sh miniconda.sh -b
 # sh anaconda.sh -b
 # echo 'export PATH=${PATH}:'${HOME}'/miniconda/bin' >> ~/.profile
