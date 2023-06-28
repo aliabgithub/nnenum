@@ -1,7 +1,7 @@
 name: nnenum
 ami: ami-0892d3c7ee96c0bf7
 scripts_dir: vnncomp_scripts
-manual_installation_step: false
+manual_installation_step: true
 run_installation_script_as_root: false
 run_post_installation_script_as_root: false
 run_toolkit_as_root: false

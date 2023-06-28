@@ -188,10 +188,14 @@ def main():
         setting_cat.set_mnist_fc_settings()
     elif settings_str == "acasxu":
         set_control_settings()
-    elif settings_str == "vggnet16":
-        set_control_settings()
+    elif settings_str in ["vggnet16", "vggnet16_2022", "vggnet16_2023"]:
+        set_image_settings()
     elif settings_str == "cgan":
         set_control_settings()
+    elif settings_str == "cifar2020":
+        set_image_settings()
+    elif settings_str == "oval21":
+        set_image_settings()
     elif settings_str == "control":
         set_control_settings()
     elif settings_str == "image":
