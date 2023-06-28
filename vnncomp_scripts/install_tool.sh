@@ -77,14 +77,14 @@ echo 'export PATH=${PATH}:'${HOME}'/anaconda3/bin' >> ~/.profile
 # create conda environment
 # ${HOME}/miniconda/bin/conda env create -f ${DIR}/environment.yml
 
-# ${conda_path}/conda create --yes --name nnenumenv python=3.8
+${HOME}/anaconda3/bin/conda create --yes --name nnenumenv python=3.8
 # ${HOME}/miniconda/bin/conda activate nnenumenv
 
-${HOME}/anaconda3/bin/pip install -r "$DIR/requirements.txt"
-${HOME}/anaconda3/bin/pip install -U --no-deps git+https://github.com/dlshriver/DNNV.git@4d4b124bd739b4ddc8c68fed1af3f85b90386155#egg=dnnv
+${HOME}/anaconda3/envs/nnenumenv/bin/pip install -r "$DIR/requirements.txt"
+${HOME}/anaconda3/envs/nnenumenv/bin/pip install -U --no-deps git+https://github.com/dlshriver/DNNV.git@4d4b124bd739b4ddc8c68fed1af3f85b90386155#egg=dnnv
 
 ${HOME}/anaconda3/bin/conda install -y -c gurobi gurobi
 # ${conda_path}/conda install --yes -n nnenumenv -c gurobi gurobi
 
 # Run grbprobe for activating gurobi later.
-${HOME}/anaconda3/bin/grbprobe
+${HOME}/anaconda3/envs/nnenumenv/bin/grbprobe

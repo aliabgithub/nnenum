@@ -24,7 +24,7 @@ echo "Running $TOOL_NAME on benchmark instance in category '$CATEGORY' with onnx
 DIR=$(dirname $(dirname $(realpath $0)))
 export PYTHONPATH="$PYTHONPATH:$DIR/src"
 
-export PATH=${PATH}:$HOME/miniconda/bin
+# export PATH=${PATH}:$HOME/miniconda/bin
 
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
@@ -36,7 +36,7 @@ export OMP_NUM_THREADS=1
 
 # conda_path = ${HOME}/miniconda/bin
 # py_pip_path = ${HOME}/miniconda/envs/nnenumenv/bin # path for python, pip, grbprobe
-${HOME}/anaconda3/bin/python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
+${HOME}/anaconda3/envs/nnenumenv/bin/python -m nnenum.nnenum -o "$ONNX_FILE" -v "$VNNLIB_FILE" -t "$TIMEOUT" -f "$RESULTS_FILE" -s "$CATEGORY"
 
 
 ####pipenv####
