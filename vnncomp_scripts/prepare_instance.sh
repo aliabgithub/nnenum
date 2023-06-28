@@ -32,7 +32,7 @@ export PYTHONPATH="$PYTHONPATH:$DIR/src"
 # py_pip_path = ${HOME}/miniconda/envs/nnenumenv/bin # path for python, pip, grbprobe
 # conda activate nnenumenv
 # ${HOME}/anaconda3/envs/nnenumenv/bin/python -m nnenum.convert_maxpool "$ONNX_FILE"
-${DIR}/miniconda/envs/nnenumenv/bin/python -m nnenum.convert_maxpool "$ONNX_FILE"
+${HOME}/miniconda/envs/nnenumenv/bin/python -m nnenum.convert_maxpool "$ONNX_FILE"
 
 ###pipenv###
 # pipenv run python -m nnenum.convert_maxpool "$ONNX_FILE"

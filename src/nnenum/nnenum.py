@@ -190,7 +190,9 @@ def main():
         set_control_settings()
     elif settings_str == "vggnet16":
         set_control_settings()
-    elif settings_str == "image":
+    elif settings_str == "cgan":
+        set_control_settings()
+    elif settings_str == "control":
         set_control_settings()
     elif settings_str == "image":
         set_image_settings()
