@@ -127,6 +127,6 @@ class Settings(metaclass=FreezableMeta):
         # generally it should be safe to add any linear layers to the whitelist
         cls.ONNX_WHITELIST = ['Add', 'AveragePool', 'Constant', 'Concat', 'Conv', 'Flatten', 'Gather', \
                               'Gemm', 'MatMul', 'Mul', 'Reshape', 'Relu', 'Shape', 'Sub', 'Unsqueeze', 'Slice', \
-                              'Dropout', 'BatchNormalization', 'ConvTranspose']
+                              'Dropout', 'BatchNormalization', 'ConvTranspose', 'Upsample']
 
         cls.ONNX_BLACKLIST = ['Atan', 'MaxPool', 'Sigmoid', 'Tanh'] # unsupported nonlinear laters

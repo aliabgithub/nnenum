@@ -184,25 +184,62 @@ def main():
             set_control_settings()
         else:
             set_image_settings()
-    elif settings_str == "mnist_fc":
-        setting_cat.set_mnist_fc_settings()
-    elif settings_str == "acasxu":
-        set_control_settings()
-    elif settings_str in ["vggnet16", "vggnet16_2022", "vggnet16_2023"]:
-        set_image_settings()
-    elif settings_str == "cgan":
-        set_control_settings()
     elif settings_str == "cifar2020":
         set_image_settings()
+    elif settings_str == "cifar_biasfield":
+        set_image_settings()
+        # Settings.LP_SOLVER = "Gurobi"
+    elif settings_str == "mnist_fc":
+        set_image_settings()
+        Settings.LP_SOLVER = "Gurobi"
+        Settings.OVERAPPROX_TYPES = [['deeppoly.area'], ['zono.area'], 
+                                ['zono.area', 'zono.ybloat', 'zono.interval', 'deeppoly.area'],
+                                ['zono.area', 'zono.ybloat', 'zono.interval', 'deeppoly.area', 'star.lp']] 
+        Settings.QUICK_OVERAPPROX_TYPES = [['deeppoly.area'], ['zono.area'],
+                                      ['zono.area', 'zono.ybloat', 'zono.interval', 'deeppoly.area']]
+    elif settings_str == "nn4sys":
+        set_control_settings()
+        Settings.LP_SOLVER = "Gurobi"
+        # Settings.OVERAPPROX_TYPES = [['deeppoly.area'], ['zono.area'], 
+        #                         ['zono.area', 'zono.ybloat', 'zono.interval', 'deeppoly.area'],
+        #                         ['zono.area', 'zono.ybloat', 'zono.interval', 'deeppoly.area', 'star.lp']] 
+        # Settings.QUICK_OVERAPPROX_TYPES = [['deeppoly.area'], ['zono.area'],
+        #                               ['zono.area', 'zono.ybloat', 'zono.interval', 'deeppoly.area']]
     elif settings_str == "oval21":
         set_image_settings()
+    elif settings_str == "reach_prob_density":
+        set_control_settings()
+    elif settings_str == "rl_benchmarks":
+        set_control_settings()
+    elif settings_str == "tllverifybench":
+        set_control_settings()
+        Settings.LP_SOLVER = "Gurobi"
+    elif settings_str in ["vggnet16", "vggnet16_2022", "vggnet16_2023"]:
+        set_image_settings()
+        Settings.LP_SOLVER = "Gurobi"
+    elif settings_str == "acasxu":
+        set_control_settings()
+    elif settings_str == "collins_rul_cnn":
+        set_image_settings()
+    elif settings_str == "cgan":
+        set_image_settings()
+    elif settings_str == "metaroom":
+        set_image_settings()
+        # Settings.LP_SOLVER = "Gurobi"
     elif settings_str == "control":
         set_control_settings()
     elif settings_str == "image":
         set_image_settings()
-    else:
-        assert settings_str == "exact"
+    elif settings_str == "exact":
         set_exact_settings()
+    else:
+        if num_inputs < 700:
+            set_control_settings()
+        else:
+            set_image_settings()
+    # else:
+    #     assert settings_str == "exact"
+    #     set_exact_settings()
 
     for init_box, spec in spec_list:
         init_box = np.array(init_box, dtype=input_dtype)
