@@ -216,7 +216,6 @@ def main():
         Settings.LP_SOLVER = "Gurobi"
     elif settings_str in ["vggnet16", "vggnet16_2022", "vggnet16_2023"]:
         set_image_settings()
-        Settings.LP_SOLVER = "Gurobi"
     elif settings_str == "acasxu":
         set_control_settings()
     elif settings_str == "collins_rul_cnn":
