@@ -103,7 +103,7 @@ def main():
     parser = argparse.ArgumentParser() # description is optional
     parser.add_argument('-o', '--onnx', type=str, required=True, help="relative path to onnx file")
     parser.add_argument('-v', '--vnnlib', type=str, required=True, help="relative path to vnnlib file")
-    parser.add_argument('-t', '--timeout', type=int, default=None, help="timeout in seconds. default is no timeout")
+    parser.add_argument('-t', '--timeout', default=None, help="timeout in seconds. default is no timeout")
     parser.add_argument('-f', '--outfile', type=str, default=None, help="filename the result save on, e.g.: out.txt, out.csv")
     parser.add_argument('-p', '--processes', type=int, help="number of processes to use")
     parser.add_argument('-s', '--settings', type=str, default="auto", help="settings to running the tool, it can be 'control' or 'image' or name of the dataset for more specified setting. default is auto")
@@ -115,7 +115,7 @@ def main():
     if args.vnnlib:
         vnnlib_filename = args.vnnlib
     
-    timeout = args.timeout
+    timeout = int(float(args.timeout)) if args.timeout else None
     
     outfile = args.outfile
     
@@ -197,7 +197,7 @@ def main():
                                 ['zono.area', 'zono.ybloat', 'zono.interval', 'deeppoly.area', 'star.lp']] 
         Settings.QUICK_OVERAPPROX_TYPES = [['deeppoly.area'], ['zono.area'],
                                       ['zono.area', 'zono.ybloat', 'zono.interval', 'deeppoly.area']]
-    elif settings_str == "nn4sys":
+    elif settings_str in ["nn4sys", "2022_nn4sys", "2023_nn4sys", "nn4sys_2022", "nn4sys_2023"]:
         set_control_settings()
         Settings.LP_SOLVER = "Gurobi"
         # Settings.OVERAPPROX_TYPES = [['deeppoly.area'], ['zono.area'], 
