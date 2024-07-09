@@ -20,8 +20,9 @@ from nnenum.settings import Settings
 from nnenum.result import Result
 from nnenum.onnx_network import load_onnx_network_optimized, load_onnx_network
 from nnenum.specification import Specification, DisjunctiveSpec
-from nnenum.vnnlib import get_num_inputs_outputs, read_vnnlib_simple
+from nnenum.vnnlib import get_num_inputs_outputs, read_vnnlib_simple, read_io_vnnlib
 import nnenum.setting_cat as setting_cat
+import time
 
 def make_spec(vnnlib_filename, onnx_filename):
     '''make Specification
@@ -45,6 +46,98 @@ def make_spec(vnnlib_filename, onnx_filename):
         rv.append((box, spec))
 
     return rv, inp_dtype
+
+def run_io_verify(vnnlib_filename, onnx_filename, timeout=None, outfile=None):
+    '''verify 'LinearizeNN_benchmark2024'
+
+    returns a pair: (list of [box, Specification], inp_dtype)
+    '''
+
+    num_inputs, num_outputs, inp_dtype = get_num_inputs_outputs(onnx_filename)
+    init_box, normalize_models_slope, models_intercept, model_range = read_io_vnnlib(vnnlib_filename, num_inputs, num_outputs)
+
+    start_time = time.time()
+    set_exact_settings()
+    Settings.RESULT_SAVE_STARS = True
+    Settings.TIMEOUT = timeout
+    spec = None
+    # network = load_onnx_network(onnx_filename)
+    network = load_onnx_network_optimized(onnx_filename)
+    res = enumerate_network(init_box, network, spec)
+    star_list = res.stars
+    time_taken = time.time() - start_time
+    # print(f"######## Time taken for getting final stars: {time_taken} seconds")
+
+    max_total = -np.inf
+    min_total = np.inf
+    maxlist = []
+    minlist = []
+    maxpoints = []
+    minpoints = []
+    result_str = 'none' # gets overridden
+    cinput = None # counterexample input
+    coutput = None # counterexample output
+    try:
+        start_time = time.time()
+        for idx, star in enumerate(star_list):
+            bias =  star.bias - models_intercept
+            direction_vec = np.array([star.a_mat[0, 0], star.a_mat[0, 1], star.a_mat[0, 2] - normalize_models_slope[0], star.a_mat[0, 3] - normalize_models_slope[1]])
+            min_point = star.lpi.minimize(direction_vec)
+            min_value = min_point @ direction_vec + bias
+            max_point = star.lpi.minimize(-1 * direction_vec)
+            max_value = max_point @ direction_vec + bias
+
+            assert min_value <= max_value
+
+            minlist.append(min_value)
+            maxlist.append(max_value)
+            minpoints.append(min_point)
+            maxpoints.append(max_point)
+            if min_value < min_total:
+                min_total = min_value
+            if max_value > max_total:
+                max_total = max_value
+        time_taken = time.time() - start_time
+        # print(f"######## Time taken for finding min/max values: {time_taken} seconds")
+        if model_range[0] <= min_total and max_total <= model_range[1]:
+            result_str = "unsat"
+            print("network is SAFE")
+        else:
+            result_str = "sat"
+            print("network is UNSAFE") 
+            if model_range[0] > min_total:
+                cinput = minpoints[np.argmin(minlist)]
+                coutput = min_total
+            else:
+                cinput = maxpoints[np.argmax(maxlist)]
+                coutput = max_total
+
+    except Exception as e:
+        # Code to execute if any other type of error occurs
+        result_str = 'error'
+        print(f"An error occurred: {e}")
+
+    if outfile is not None:
+        with open(outfile, 'w', encoding="utf-8") as f:
+            f.write(result_str)
+
+            if result_str == "sat":
+                # print counterexamples
+                
+                for i, x in enumerate(cinput):
+                    if i == 0:
+                        f.write('\n(')
+                    else:
+                        f.write('\n')
+                    
+                    f.write(f"(X_{i} {x})")
+
+                ###########
+
+                for i, y in enumerate(coutput):
+                    f.write(f"\n(Y_{i} {y})")
+
+                f.write(')')
 
 def set_control_settings():
     'set settings for smaller control benchmarks'
@@ -167,7 +260,11 @@ def main():
     ####################################
 
     #
-    spec_list, input_dtype = make_spec(vnnlib_filename, onnx_filename)
+    if settings_str == "LinearizeNN_benchmark2024":
+        run_io_verify(vnnlib_filename, onnx_filename, timeout, outfile)
+        return
+    else:
+        spec_list, input_dtype = make_spec(vnnlib_filename, onnx_filename)
 
     try:
         network = load_onnx_network_optimized(onnx_filename)
