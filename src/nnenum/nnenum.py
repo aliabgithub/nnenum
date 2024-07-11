@@ -23,6 +23,7 @@ from nnenum.specification import Specification, DisjunctiveSpec
 from nnenum.vnnlib import get_num_inputs_outputs, read_vnnlib_simple, read_io_vnnlib
 import nnenum.setting_cat as setting_cat
 import time
+import re
 
 def make_spec(vnnlib_filename, onnx_filename):
     '''make Specification
@@ -218,6 +219,8 @@ def main():
     
     if args.settings:
         settings_str = args.settings
+        settings_str = re.sub(r"^(202[0-9]_|202[0-9])", "", settings_str)
+        settings_str = re.sub(r"(_202[0-9]|202[0-9])$", "", settings_str)
     else:
         settings_str = "auto"
         
@@ -260,7 +263,9 @@ def main():
     ####################################
 
     #
-    if settings_str == "LinearizeNN_benchmark2024":
+    if settings_str == "linearizenn":
+        onnx_filename = re.sub(r"_\d+_\d+", "", onnx_filename)
+        vnnlib_filename = vnnlib_filename.replace(".vnnlib", "_io.vnnlib")
         run_io_verify(vnnlib_filename, onnx_filename, timeout, outfile)
         return
     else:
@@ -281,7 +286,7 @@ def main():
             set_control_settings()
         else:
             set_image_settings()
-    elif settings_str == "cifar2020":
+    elif settings_str == "cifar2020" or "cifar":
         set_image_settings()
     elif settings_str == "cifar_biasfield":
         set_image_settings()
