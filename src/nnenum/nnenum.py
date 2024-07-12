@@ -286,7 +286,12 @@ def main():
             set_control_settings()
         else:
             set_image_settings()
-    elif settings_str == "cifar2020" or "cifar":
+    elif settings_str == "cora":
+        set_image_settings()
+        Settings.LP_SOLVER = "Gurobi"
+    elif settings_str == "safenlp":
+        set_image_settings()
+    elif settings_str in ["cifar2020", "cifar"]:
         set_image_settings()
     elif settings_str == "cifar_biasfield":
         set_image_settings()
