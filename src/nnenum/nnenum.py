@@ -60,7 +60,7 @@ def run_io_verify(vnnlib_filename, onnx_filename, timeout=None, outfile=None):
     start_time = time.time()
     set_exact_settings()
     Settings.RESULT_SAVE_STARS = True
-    Settings.TIMEOUT = timeout
+    if timeout is not None: Settings.TIMEOUT = timeout
     spec = None
     # network = load_onnx_network(onnx_filename)
     network = load_onnx_network_optimized(onnx_filename)
@@ -263,7 +263,7 @@ def main():
     ####################################
 
     #
-    if settings_str == "linearizenn":
+    if settings_str == "linearizenn" and ("test" not in onnx_filename.split('/')[-1]):
         onnx_filename = re.sub(r"_\d+_\d+", "", onnx_filename)
         vnnlib_filename = vnnlib_filename.replace(".vnnlib", "_io.vnnlib")
         run_io_verify(vnnlib_filename, onnx_filename, timeout, outfile)
